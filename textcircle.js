@@ -48,7 +48,24 @@ if (Meteor.isClient) {
       return users;
     }
   })
- 
+
+  //////////
+  //Events// 
+  //////////
+
+  Template.navbar.events({
+    "click .js-add-doc": function(event) {
+      event.preventDefault();
+      if (!Meteor.user()) { // Not logged in
+        alert("You need to login first");
+      } else {
+        Meteor.call("addDoc");
+        console.log("Add a New Doc!");
+
+      }
+    }
+  });
+
 }// end isClient...
 
 if (Meteor.isServer) {
@@ -80,6 +97,20 @@ Meteor.methods({
     eusers.users[this.userId] = user;
     // upsert- insert or update if filter matches
     EditingUsers.upsert({_id:eusers._id}, eusers);
+  },
+  addDoc:function() {
+    var doc;
+    if (!this.userId) {
+      return;
+    } else {
+      doc = {
+        owner: this.userId,
+        createdOn: new Date(),
+        title:"my new doc"
+      }
+
+      Documents.insert(doc);
+    }
   }
 })
 
@@ -93,9 +124,3 @@ function fixObjectKeys(obj){
   }
   return newObj;
 }
-
-  
-
-
-
-
