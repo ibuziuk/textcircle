@@ -5,8 +5,13 @@
 <body>
  {{> navbar}}
  <div class="container top-margin">
+    <div class="row">
+      <div class="col-md-12">
+          {{> docMeta}}
+      </div>
+    </div>
 
- <div class="row">
+    <div class="row">
       <div class="col-md-12">
           {{> editingUsers}}
       </div>
@@ -31,7 +36,19 @@
           <li>
           <a href="#" class="js-add-doc">
             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>New Doc  
-          </a></li>
+          </a>
+          </li>
+
+          <!-- dropdown list -->
+          <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Documents<span class="caret"></span></a>
+          
+          <ul class="dropdown-menu">
+            {{#each documents}}
+            <li><a href="#" class="js-load-doc">{{title}}</a></li>
+            {{/each}}
+          </ul>
+          </li>
         </ul>
         <p class="navbar-text navbar-right">
           {{> loginButtons align="right"}}
@@ -56,6 +73,12 @@
   <span class="label label-success">{{firstname}} </span>
    
   {{/each}}
+</template>
+
+<template name="docMeta"> 
+  {{#with documents}}
+  <span class="h1">{{> editableText collection="documents" field="title"}}</span>
+  {{/with}}
 </template>
 
 

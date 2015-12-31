@@ -7,13 +7,8 @@ if (Meteor.isClient) {
   // return the id of the first document you can find
   Template.editor.helpers({
     docid:function(){
-      var doc = Documents.findOne();
-      if (doc){
-        return doc._id;
-      }
-      else {
-        return undefined;
-      }
+      setupCurrentDocument();
+      return Session.get("docid");
     }, 
     // configure the CodeMirror editor
     config:function(){
@@ -49,6 +44,25 @@ if (Meteor.isClient) {
     }
   })
 
+  Template.docMeta.helpers({
+    documents:function(){
+    	return Documents.findOne({_id:Session.get("docid")});
+    }
+  });
+
+  Template.navbar.helpers({
+    documents:function(){
+    	return Documents.find({});
+    }
+  });
+
+  Template.editableText.helpers({
+  	userCanEdit:function(doc, Collection) {
+  		var doc = Documents.findOne({_id:Session.get("docid"), owner:Meteor.userId()});
+  		return !!doc;
+  	}
+  });
+
   //////////
   //Events// 
   //////////
@@ -59,10 +73,17 @@ if (Meteor.isClient) {
       if (!Meteor.user()) { // Not logged in
         alert("You need to login first");
       } else {
-        Meteor.call("addDoc");
-        console.log("Add a New Doc!");
-
+        Meteor.call("addDoc", function(err, res) {
+        	if (!err) {
+        		console.log("event callback an id = " + res);
+        		Session.set("docid", res);
+        	}
+        });
       }
+    },
+    "click .js-load-doc":function(event) {
+    	console.log(this);
+    	Session.set("docid", this._id);
     }
   });
 
@@ -72,7 +93,7 @@ if (Meteor.isServer) {
   Meteor.startup(function () {
     // insert a document if there isn't one already
     if (!Documents.findOne()){// no documents yet!
-        Documents.insert({title:"my new document"});
+        Documents.insert({title:"my new document!!"});
     }
   });
 }
@@ -106,13 +127,25 @@ Meteor.methods({
       doc = {
         owner: this.userId,
         createdOn: new Date(),
-        title:"my new doc"
+        title:"my new document"
       }
 
-      Documents.insert(doc);
+      var id = Documents.insert(doc);
+      console.log("Adding new document with id = " + id);
+      return id;
     }
   }
 })
+
+function setupCurrentDocument() {
+	var doc;
+	if(!Session.get("docid")) {
+		doc = Documents.findOne();
+		if (doc) {
+			Session.set("docid", doc._id);
+		}
+	}
+}
 
 // this renames object keys by removing hyphens to make the compatible 
 // with spacebars. 
